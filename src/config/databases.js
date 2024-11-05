@@ -1,10 +1,8 @@
 import { Sequelize } from 'sequelize';
-import { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER } from './env.js';
+import { DB_URL } from './env.js';
 
-export const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASSWORD, {
-  host: DB_HOST,
+export const sequelize = new Sequelize(DB_URL, {
   dialect: 'mysql',
-  port: DB_PORT,
   pool: {
     max: 10, //Mantiene hasta 10 conexiones simultáneamente
     min: 0, //No mantiene ninguna conexión cuando no se necesitan
@@ -23,9 +21,7 @@ const testConnect = async () => {
     await sequelize.authenticate();
     console.log('La conexión se estableció correctamente');
   } catch (error) {
-    console.error(
-      `No se pudo establecer la conexión correctamente: ${error.message}`
-    );
+    console.error(`No se pudo establecer la conexión correctamente: ${error.message}`);
     console.error(`Detalles del error: ${JSON.stringify(error, null, 2)}`);
   }
 };
