@@ -1,0 +1,740 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  description: Descripción de la API
+  contact:
+    email: tidy@tidy.com
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor de desarrollo
+  - url: http://localhost:5173
+    description: Servidor del frontend
+  - url: http://tidy-app.me
+    description: Ruta de dominio para enviar correos electrónicos
+
+tags:
+  - name: Auth
+    description: Operaciones de autenticación
+  - name: Subjects
+    description: Operaciones relacionadas con materias
+  - name: Activities
+    description: Operaciones relacionadas con actividades
+  - name: Subtasks
+    description: Operaciones relacionadas con subtareas
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID del usuario
+        name:
+          type: string
+          description: Nombre del usuario
+        email:
+          type: string
+          description: Correo electrónico del usuario
+        password:
+          type: string
+          description: Contraseña del usuario
+        rol:
+          type: string
+          enum: [estudiante, tutor, padre]
+          description: Rol del usuario
+        fecha_registro:
+          type: string
+          format: date-time
+          description: Fecha de registro del usuario
+        resetPasswordToken:
+          type: string
+          description: Token para restablecer la contraseña
+        resetPasswordExpires:
+          type: string
+          format: date-time
+          description: Fecha de expiración del token de restablecimiento de contraseña
+        emailVerificationToken:
+          type: string
+          description: Token para verificar el correo electrónico
+        emailVerified:
+          type: boolean
+          description: Indica si el correo electrónico ha sido verificado
+
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la materia
+        name:
+          type: string
+          description: Nombre de la materia
+        description:
+          type: string
+          description: Descripción de la materia
+        name_teacher:
+          type: string
+          description: Nombre del profesor
+        userId:
+          type: integer
+          description: ID del usuario
+
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la actividad
+        titulo:
+          type: string
+          description: Título de la actividad
+        description:
+          type: string
+          description: Descripción de la actividad
+        fecha_inicio:
+          type: string
+          format: date-time
+          description: Fecha de inicio de la actividad
+        fecha_fin:
+          type: string
+          format: date-time
+          description: Fecha de fin de la actividad
+        estado:
+          type: string
+          enum: [pendiente, en_progreso, completada]
+          description: Estado de la actividad
+        num_preguntas:
+          type: integer
+          description: Número de preguntas de la actividad
+        prioridad_id:
+          type: integer
+          description: ID de la prioridad de la actividad
+        user_id:
+          type: integer
+          description: ID del usuario
+        subject_id:
+          type: integer
+          description: ID de la materia
+
+    CreateActivityRequest:
+      type: object
+      properties:
+        titulo:
+          type: string
+          description: Título de la actividad
+        description:
+          type: string
+          description: Descripción de la actividad
+        fecha_inicio:
+          type: string
+          format: date-time
+          description: Fecha de inicio de la actividad
+        fecha_fin:
+          type: string
+          format: date-time
+          description: Fecha de fin de la actividad
+        estado:
+          type: string
+          enum: [pendiente, en_progreso, completada]
+          description: Estado de la actividad
+        num_preguntas:
+          type: integer
+          description: Número de preguntas de la actividad
+        prioridad_id:
+          type: integer
+          description: ID de la prioridad de la actividad
+
+    Subtask:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la subtarea
+        titulo:
+          type: string
+          description: Título de la subtarea
+        description:
+          type: string
+          description: Descripción de la subtarea
+        estado:
+          type: string
+          enum: [pendiente, en_progreso, completada]
+          description: Estado de la subtarea
+        actividad_id:
+          type: integer
+          description: ID de la actividad
+
+    Priority:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID de la prioridad
+        nivel:
+          type: string
+          enum: [baja, media, alta]
+          description: Nivel de la prioridad
+
+security:
+  - bearerAuth: []
+
+paths:
+  /sign-up:
+    post:
+      summary: Registro de usuario
+      description: Permite registrar un nuevo usuario en el sistema.
+      operationId: registerUser
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Nombre del usuario
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  description: Contraseña del usuario
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+        '400':
+          description: Error en la solicitud
+
+  /sign-in:
+    post:
+      summary: Iniciar sesión
+      description: Permite a un usuario iniciar sesión en el sistema.
+      operationId: loginUser
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+                password:
+                  type: string
+                  description: Contraseña del usuario
+      responses:
+        '200':
+          description: Inicio de sesión exitoso
+        '401':
+          description: Credenciales inválidas
+
+  /sign-out:
+    post:
+      summary: Cerrar sesión
+      description: Permite a un usuario cerrar sesión en el sistema.
+      operationId: logoutUser
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Cierre de sesión exitoso
+        '401':
+          description: No autorizado
+
+  /session:
+    get:
+      summary: Validar sesión
+      description: Permite validar si una sesión de usuario es válida.
+      operationId: validateSession
+      tags:
+        - Auth
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Sesión válida
+        '401':
+          description: No autorizado
+
+  /request-password-reset:
+    post:
+      summary: Solicitar restablecimiento de contraseña
+      description: Permite solicitar un restablecimiento de contraseña.
+      operationId: requestPasswordReset
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Correo electrónico del usuario
+      responses:
+        '200':
+          description: Solicitud de restablecimiento enviada
+        '400':
+          description: Error en la solicitud
+
+  /reset-password/{token}:
+    post:
+      summary: Restablecer contraseña
+      description: Permite restablecer la contraseña de un usuario.
+      operationId: resetPassword
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPassword:
+                  type: string
+                  description: Nueva contraseña del usuario
+      responses:
+        '200':
+          description: Contraseña restablecida exitosamente
+        '400':
+          description: Error en la solicitud
+
+  /verify-reset-token/{token}:
+    get:
+      summary: Verificar token de restablecimiento de contraseña
+      description: Permite verificar la validez de un token de restablecimiento de contraseña.
+      operationId: verifyResetToken
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token válido
+        '400':
+          description: Token inválido
+
+  /verify-email/{token}:
+    get:
+      summary: Verificar correo electrónico
+      description: Permite verificar la validez de un token de verificación de correo electrónico.
+      operationId: verifyEmail
+      tags:
+        - Auth
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Correo electrónico verificado exitosamente
+        '400':
+          description: Token inválido
+
+  /subjects:
+    get:
+      summary: Obtener todas las materias del usuario autenticado
+      description: Permite obtener todas las materias asociadas al usuario autenticado.
+      operationId: getSubjects
+      tags:
+        - Subjects
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de materias obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subject'
+        '401':
+          description: No autorizado
+
+    post:
+      summary: Crear una nueva materia para el usuario autenticado
+      description: Permite crear una nueva materia asociada al usuario autenticado.
+      operationId: createSubject
+      tags:
+        - Subjects
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectName:
+                  type: string
+                  description: Nombre de la materia
+                description:
+                  type: string
+                  description: Descripción de la materia
+                name_teacher:
+                  type: string
+                  description: Nombre del profesor
+      responses:
+        '201':
+          description: Materia creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+  /subjects/{id}:
+    put:
+      summary: Editar una materia del usuario autenticado
+      description: Permite editar una materia asociada al usuario autenticado.
+      operationId: updateSubject
+      tags:
+        - Subjects
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjectName:
+                  type: string
+                  description: Nombre de la materia
+                description:
+                  type: string
+                  description: Descripción de la materia
+                name_teacher:
+                  type: string
+                  description: Nombre del profesor
+      responses:
+        '200':
+          description: Materia actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+    delete:
+      summary: Eliminar una materia del usuario autenticado
+      description: Permite eliminar una materia asociada al usuario autenticado.
+      operationId: deleteSubject
+      tags:
+        - Subjects
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Materia eliminada exitosamente
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+  /subjects/{id}/activities:
+    get:
+      summary: Obtener todas las actividades de una materia específica
+      description: Permite obtener todas las actividades asociadas a una materia específica.
+      operationId: getActivities
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de actividades obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        '401':
+          description: No autorizado
+
+    post:
+      summary: Crear una nueva actividad en una materia específica
+      description: Permite crear una nueva actividad asociada a una materia específica.
+      operationId: createActivity
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+      responses:
+        '201':
+          description: Actividad creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+  /subjects/{id}/activities/{idActivity}:
+    get:
+      summary: Obtener una actividad específica de una materia
+      description: Permite obtener una actividad específica asociada a una materia.
+      operationId: getActivityById
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Actividad obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '401':
+          description: No autorizado
+        '404':
+          description: No se encontró la actividad
+
+    put:
+      summary: Actualizar una actividad existente
+      description: Permite actualizar una actividad existente asociada a una materia.
+      operationId: updateActivity
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+      responses:
+        '200':
+          description: Actividad actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+    delete:
+      summary: Eliminar una actividad existente
+      description: Permite eliminar una actividad existente asociada a una materia.
+      operationId: deleteActivity
+      tags:
+        - Activities
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Actividad eliminada exitosamente
+        '400':
+          description: Error en la solicitud
+        '401':
+          description: No autorizado
+
+  /subjects/{idSubject}/activities/{idActivity}/subtasks/{idSubtask}:
+    get:
+      summary: Obtener una subtarea específica de una actividad
+      description: Permite obtener una subtarea específica asociada a una actividad.
+      operationId: getSubtaskById
+      tags:
+        - Subtasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idSubject
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSubtask
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Subtarea obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subtask'
+        '401':
+          description: No autorizado
+        '404':
+          description: No se encontró la subtarea
+
+  /activities/{idActivity}/subtasks:
+    get:
+      summary: Obtener todas las subtareas de una actividad específica
+      description: Permite obtener todas las subtareas asociadas a una actividad específica.
+      operationId: getSubtasks
+      tags:
+        - Subtasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Lista de subtareas obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subtask'
+        '401':
+          description: No autorizado
+
+  /activities/{idActivity}/subtasks/{idSubtask}:
+    put:
+      summary: Actualizar una subtarea existente
+      description: Permite actualizar una subtarea existente asociada a una actividad.
+      operationId: updateSubtask
+      tags:
+        - Subtasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: idActivity
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: idSubtask
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [pendiente, en_progreso, completada]
+                  description: Estado de la subtarea
+      responses:
+        '200':
+          description: Subtarea actualizada exitosamente
