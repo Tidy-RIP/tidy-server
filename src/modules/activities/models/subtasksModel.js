@@ -1,8 +1,8 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/databases.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "../../../config/databases.js";
 
 export const Subtasks = sequelize.define(
-  'subtasks',
+  "subtasks",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -18,8 +18,8 @@ export const Subtasks = sequelize.define(
       allowNull: true,
     },
     estado: {
-      type: DataTypes.ENUM('pendiente', 'en_progreso', 'completada'),
-      defaultValue: 'pendiente',
+      type: DataTypes.STRING(15),
+      allowNull: false,
     },
     actividad_id: {
       type: DataTypes.INTEGER,
@@ -30,5 +30,5 @@ export const Subtasks = sequelize.define(
       allowNull: true,
     },
   },
-  { tableName: 'subtasks', paranoid: true }
+  { tableName: "subtasks", paranoid: true }
 );

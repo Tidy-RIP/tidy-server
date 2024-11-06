@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/databases.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "../../../config/databases.js";
 
 //Modelo de Prioridades con: id, nivel
 export const Priorities = sequelize.define(
-  'priorities',
+  "priorities",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -11,8 +11,8 @@ export const Priorities = sequelize.define(
       primaryKey: true,
     },
     nivel: {
-      type: DataTypes.ENUM('baja', 'media', 'alta'),
-      defaultValue: 'alta',
+      type: DataTypes.STRING(15),
+      allowNull: false,
     },
     deletedAt: {
       type: DataTypes.DATE,
@@ -20,7 +20,7 @@ export const Priorities = sequelize.define(
     },
   },
   {
-    tableName: 'priorities',
+    tableName: "priorities",
     paranoid: true,
   }
 );

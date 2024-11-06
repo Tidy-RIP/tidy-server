@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/databases.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "../../../config/databases.js";
 
 //Modelo de Prioridades con: id, name, email, password, rol y fecha de registro.
 export const Users = sequelize.define(
-  'users',
+  "users",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -24,8 +24,8 @@ export const Users = sequelize.define(
       allowNull: false,
     },
     rol: {
-      type: DataTypes.ENUM('estudiante', 'tutor', 'padre'),
-      defaultValue: 'estudiante',
+      type: DataTypes.STRING(10),
+      defaultValue: "estudiante",
       allowNull: true,
     },
     resetPasswordToken: {
@@ -50,7 +50,7 @@ export const Users = sequelize.define(
     },
   },
   {
-    tableName: 'users',
+    tableName: "users",
     timestamps: true,
     paranoid: true,
   }
