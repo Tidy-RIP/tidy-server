@@ -1,9 +1,9 @@
-import { DataTypes } from 'sequelize';
-import { sequelize } from '../../../config/databases.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "../../../config/databases.js";
 
-//Modelo de Actividades con: id, titulo, descripción, fecha inicio, fecha fin y su estado
+// Modelo de Actividades con: id, titulo, descripción, fecha inicio, fecha fin y su estado
 export const Activities = sequelize.define(
-  'activities',
+  "activities",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -28,16 +28,16 @@ export const Activities = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     estado: {
-      type: DataTypes.ENUM('pendiente', 'en_progreso', 'completada'),
-      defaultValue: 'pendiente',
+      type: DataTypes.STRING(15),
+      allowNull: false,
     },
     num_preguntas: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     option: {
-      type: DataTypes.ENUM('Option 1', 'Option 2'),
-      defaultValue: 'Option 1',
+      type: DataTypes.STRING(15),
+      allowNull: false,
     },
     prioridad_id: {
       type: DataTypes.INTEGER,
@@ -56,5 +56,5 @@ export const Activities = sequelize.define(
       allowNull: true,
     },
   },
-  { tableName: 'activities', paranoid: true }
+  { tableName: "activities", paranoid: true }
 );
