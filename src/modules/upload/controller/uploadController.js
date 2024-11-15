@@ -1,7 +1,6 @@
-import createError from "../../../helpers/createError.js";
 import logger from "../../logger/config.js";
-
 import { processPdf } from "../../../helpers/processPdf.js";
+import { extractItemsFromPdf } from "../../../helpers/pdfHelper.js";
 
 export const uploadFile = async (req, res) => {
   try {
@@ -9,12 +8,18 @@ export const uploadFile = async (req, res) => {
     const pdfText = await processPdf(pdfPath);
 
     logger.info(`Contenido del PDF:\n${pdfText}`);
-    console.log(`asdf: ${pdfText}`);
 
-    pdfText.split(/\d+\.\s/).map((e) => console.log(e + "\n\n"));
+    const { itemCount, filteredTitles } = extractItemsFromPdf(pdfText);
 
-    res.status(200).json({ message: "Archivo subido con éxito" });
+    console.log(`Número de ítems encontrados: ${itemCount}`);
+
+    res.status(200).json({
+      message: "Archivo subido con éxito",
+      itemCount,
+      items: filteredTitles,
+    });
   } catch (error) {
-    res.status(error.statusCode || 500).json(error.message);
+    logger.error(`Error al procesar el archivo: ${error.message}`);
+    res.status(error.statusCode || 500).json({ message: error.message });
   }
 };
