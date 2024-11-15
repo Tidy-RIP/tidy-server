@@ -38,6 +38,8 @@ subtaskRoute.put(
 
 subtaskRoute.delete(
   "/activities/:idActivity/subtasks/:idSubtask",
+  logEndpointAccess("/activities/:idActivity/subtasks/:idSubtask"),
+  validateJwt,
   deleteSubtaskCtrl
 );
 
