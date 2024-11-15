@@ -11,6 +11,8 @@ export const uploadFile = async (req, res) => {
     logger.info(`Contenido del PDF:\n${pdfText}`);
     console.log(`asdf: ${pdfText}`);
 
+    pdfText.split(/\d+\.\s/).map((e) => console.log(e + "\n\n"));
+
     res.status(200).json({ message: "Archivo subido con éxito" });
   } catch (error) {
     res.status(error.statusCode || 500).json(error.message);
