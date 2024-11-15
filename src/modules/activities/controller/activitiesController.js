@@ -7,6 +7,8 @@ import {
 } from "../services/activitiesService.js";
 import { findSubjectByIdAndUserId } from "../../subjects/services/subjectsService.js";
 import logger from "../../logger/config.js";
+import { processPdf } from "../../../helpers/processPdf.js";
+import { extractItemsFromPdf } from "../../../helpers/pdfHelper.js";
 
 export const getActivities = async (req, res) => {
   const { id } = req.params;
@@ -104,6 +106,23 @@ export const createActivityCtrl = async (req, res) => {
     );
     const subject = await findSubjectByIdAndUserId(id, userId);
 
+    let numPreguntas = num_preguntas;
+    let titles = [];
+
+    if (req.file) {
+      const pdfPath = req.file.path;
+      const pdfText = await processPdf(pdfPath);
+
+      logger.info(`Contenido del PDF:\n${pdfText}`);
+
+      const { itemCount, filteredTitles } = extractItemsFromPdf(pdfText);
+
+      numPreguntas = itemCount;
+      console.log(numPreguntas);
+      titles = filteredTitles;
+      console.log(titles);
+    }
+
     const newActivity = await createActivityWithSubtasks(
       {
         titulo,
@@ -111,13 +130,14 @@ export const createActivityCtrl = async (req, res) => {
         fecha_inicio,
         fecha_fin,
         estado,
-        num_preguntas,
+        num_preguntas: numPreguntas,
         prioridad_id,
         option,
         user_id: userId,
         subject_id: subject.id,
       },
-      option
+      option,
+      titles
     );
 
     res.status(201).json({
