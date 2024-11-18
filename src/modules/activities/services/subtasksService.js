@@ -110,3 +110,18 @@ export const deleteSubtasks = async subtasksId => {
     throw createError('Error en el servidor al eliminar la subtarea', error.statusCode || 500);
   }
 };
+
+export const deleteAllSubtask = async activityId => {
+  try {
+    logger.info(`Eliminando subtareas para la actividad con id: ${activityId}`);
+    const subtasks = await findSubtasksByActivityId(activityId);
+
+    const deleteSubtask = await Subtasks.destroy({ where: { actividad_id: activityId } });
+
+    return deleteSubtask;
+  } catch (error) {
+    logger.error(`Error al eliminar las subtareas para la actividad con id: ${activityId}`);
+
+    throw createError('Error en el servidor al eliminar las subtareas', error.statusCode || 500);
+  }
+};

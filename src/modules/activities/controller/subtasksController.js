@@ -2,6 +2,7 @@ import { findSubjectByIdAndUserId } from "../../subjects/services/subjectsServic
 import { findActivityById } from "../services/activitiesService.js";
 import {
   deleteSubtasks,
+  deleteAllSubtask,
   findSubtasksByActivityId,
   findSubtasksById,
 } from "../services/subtasksService.js";
@@ -180,3 +181,45 @@ export const deleteSubtaskCtrl = async (req, res) => {
     });
   }
 };
+
+export const deleteAllSubtaskCtrl = async (req, res) => {
+  const { idActivity } = req.params;
+
+  try {
+    logger.info(`Buscando la actividad con id: ${idActivity}`);
+    const isActivity = await findActivityById(idActivity);
+
+    if (!isActivity) {
+      logger.error(`No se encontro la actividad con id: ${idActivity}`);
+      return res.status(404).json({ message: "No se encontro la actividad" });
+    }
+
+    logger.info(`Eliminando subtareas para la actividad con id: ${idActivity}`);
+    const deletedCount = await deleteAllSubtask(idActivity);
+
+    if (deletedCount === 0) {
+      logger.info(`No hay subtareas para la actividad con id: ${idActivity}`);
+      return res.status(200).json({
+        message: 'No hay subtareas para eliminar',
+        actividad: isActivity.title,
+      });
+    }
+  
+    res.status(200).json({
+      Message: 'Subtareas eliminadas",
+      Actividad: isActivity.titulo,
+      Subtareas: deletedCount,
+    });
+  } catch (error) {
+    logger.error(
+      `Error en el controlador al eliminar las subtareas para la actividad con id: ${idActivity}. Su error es: ${error.stack}`
+    );
+
+    res.status(error.statusCode || 500).json({
+      message:
+        error.statusCode === 404
+          ? "No se encontro la subtarea"
+          : "Error en el servidor. Por favor, intentalo de nuevo.",
+    });
+  }
+}

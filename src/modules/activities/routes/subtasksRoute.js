@@ -4,6 +4,7 @@ import {
   updateSubtasksCtrl,
   getSubtasks,
   deleteSubtaskCtrl,
+  deleteAllSubtaskCtrl,
 } from "../controller/subtasksController.js";
 
 import logEndpointAccess from "../../logger/middleware/loggerMiddleware.js";
@@ -43,4 +44,11 @@ subtaskRoute.delete(
   deleteSubtaskCtrl
 );
 
-export default subtaskRoute;
+subtaskRoute.delete(
+  "/activities/:idActivity/subtasks",
+  logEndpointAccess("/activities/:idActivity/subtasks"),
+  validateJwt,
+  deleteAllSubtaskCtrl
+);
+ 
+ export default subtaskRoute;
