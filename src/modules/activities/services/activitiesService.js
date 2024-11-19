@@ -1,13 +1,16 @@
-import { Activities } from '../models/activitiesModel.js';
-import { Subtasks } from '../models/subtasksModel.js';
-import { sequelize } from '../../../config/databases.js';
-import { findSubtasksByActivityId, generateSubtasks } from './subtasksService.js';
+import { Activities } from "../models/activitiesModel.js";
+import { Subtasks } from "../models/subtasksModel.js";
+import { sequelize } from "../../../config/databases.js";
+import {
+  findSubtasksByActivityId,
+  generateSubtasks,
+} from "./subtasksService.js";
 
-import createError from '../../../helpers/createError.js';
-import logger from '../../logger/config.js';
+import createError from "../../../helpers/createError.js";
+import logger from "../../logger/config.js";
 
-const OPTION_1 = 'Option 1';
-const OPTION_2 = 'Option 2';
+const OPTION_1 = "Option-1";
+const OPTION_2 = "Option-2";
 
 /**
  * Busca una actividad por su ID.
@@ -15,20 +18,25 @@ const OPTION_2 = 'Option 2';
  * @returns {Promise<Object>} - Actividad encontrada.
  * @throws {Error} - Si la actividad no es encontrada.
  */
-export const findActivityById = async activityId => {
+export const findActivityById = async (activityId) => {
   try {
     logger.info(`Buscando la actividad con id: ${activityId}`);
     const activity = await Activities.findOne({ where: { id: activityId } });
 
     if (!activity) {
       logger.info(`La actividad con id: ${activityId} no se encontro `);
-      throw createError('Actividad no encontrada', 404);
+      throw createError("Actividad no encontrada", 404);
     }
 
     return activity;
   } catch (error) {
-    logger.error(`Error al buscar la actividad con id ${activityId}. Su error es: ${error.message}`);
-    throw createError('Error al encontrar la actividad', error.statusCode || 500);
+    logger.error(
+      `Error al buscar la actividad con id ${activityId}. Su error es: ${error.message}`
+    );
+    throw createError(
+      "Error al encontrar la actividad",
+      error.statusCode || 500
+    );
   }
 };
 
@@ -38,7 +46,7 @@ export const findActivityById = async activityId => {
  * @returns {Promise<Array>} - Lista de actividades.
  * @throws {Error} - Si ocurre un error al buscar las actividades.
  */
-export const findActivitiesBySubjectId = async subjectId => {
+export const findActivitiesBySubjectId = async (subjectId) => {
   try {
     logger.info(`Buscando actividades para la materia con id: ${subjectId}`);
 
@@ -47,14 +55,18 @@ export const findActivitiesBySubjectId = async subjectId => {
     });
 
     if (!activities || activities.length === 0) {
-      logger.info(`No se encontraron actividades para la materia con id: ${subjectId}`);
-      throw createError('No se encontraron actividades', 404);
+      logger.info(
+        `No se encontraron actividades para la materia con id: ${subjectId}`
+      );
+      throw createError("No se encontraron actividades", 404);
     }
 
     return activities;
   } catch (error) {
-    logger.error(`Error al buscar actividades para la materia con id: ${subjectId}. Su error es: ${error.stack}`);
-    throw createError('Error al buscar actividades', error.statusCode || 500);
+    logger.error(
+      `Error al buscar actividades para la materia con id: ${subjectId}. Su error es: ${error.stack}`
+    );
+    throw createError("Error al buscar actividades", error.statusCode || 500);
   }
 };
 
@@ -70,11 +82,11 @@ export const createActivityWithSubtasks = async (activityData, option) => {
   try {
     // Validamos los datos de entrada
     if (!activityData) {
-      throw createError('Datos de la actividad inválida', 400);
+      throw createError("Datos de la actividad inválida", 400);
     }
 
     if (option && ![OPTION_1, OPTION_2].includes(option)) {
-      throw createError('Opcion no valida', 400);
+      throw createError("Opcion no valida", 400);
     }
 
     const newActivity = await Activities.create(activityData, { transaction });
@@ -105,11 +117,11 @@ export const updateActivity = async (activityId, activityData, option) => {
   try {
     // Validamos los datos de entrada
     if (!activityData) {
-      throw createError('Datos de la actividad inválida', 400);
+      throw createError("Datos de la actividad inválida", 400);
     }
 
     if (option && ![OPTION_1, OPTION_2].includes(option)) {
-      throw createError('Opción no válida', 400);
+      throw createError("Opción no válida", 400);
     }
 
     const updatedActivity = await Activities.update(activityData, {
@@ -121,7 +133,10 @@ export const updateActivity = async (activityId, activityData, option) => {
     const subtasks = generateSubtasks(activityData, activityId, option);
 
     if (subtasks.length > 0) {
-      await Subtasks.destroy({ where: { actividad_id: activityId }, transaction });
+      await Subtasks.destroy({
+        where: { actividad_id: activityId },
+        transaction,
+      });
       await Subtasks.bulkCreate(subtasks, { transaction });
     }
 
@@ -141,7 +156,7 @@ export const updateActivity = async (activityId, activityData, option) => {
  * @returns {Promise<void>}
  * @throws {Error} - Si ocurre un error al eliminar la actividad.
  */
-export const deleteActivity = async activityId => {
+export const deleteActivity = async (activityId) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -150,23 +165,36 @@ export const deleteActivity = async activityId => {
 
     if (!activity) {
       logger.info(`La actividad con id: ${activityId} no se encontró`);
-      throw createError('Actividad no encontrada', 404);
+      throw createError("Actividad no encontrada", 404);
     }
 
     logger.info(`Buscando subtareas para la actividad con id: ${activityId}`);
-    const subtasks = await findSubtasksByActivityId(activityId, { transaction });
+    const subtasks = await findSubtasksByActivityId(activityId, {
+      transaction,
+    });
 
     if (subtasks.length > 0) {
-      logger.info(`Eliminando ${subtasks.length} subtareas asociadas a la actividad con id: ${activityId}`);
-      await Promise.all(subtasks.map(subtask => subtask.destroy({ transaction })));
+      logger.info(
+        `Eliminando ${subtasks.length} subtareas asociadas a la actividad con id: ${activityId}`
+      );
+      await Promise.all(
+        subtasks.map((subtask) => subtask.destroy({ transaction }))
+      );
     }
 
     await activity.destroy({ transaction });
     await transaction.commit();
-    logger.info(`Actividad con id: ${activityId} eliminada exitosamente junto con sus subtareas`);
+    logger.info(
+      `Actividad con id: ${activityId} eliminada exitosamente junto con sus subtareas`
+    );
   } catch (error) {
     await transaction.rollback();
-    logger.error(`Error al eliminar actividad con id: ${activityId}. Su error es: ${error.message}`);
-    throw createError('Error al eliminar la actividad', error.statusCode || 500);
+    logger.error(
+      `Error al eliminar actividad con id: ${activityId}. Su error es: ${error.message}`
+    );
+    throw createError(
+      "Error al eliminar la actividad",
+      error.statusCode || 500
+    );
   }
 };

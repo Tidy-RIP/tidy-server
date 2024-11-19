@@ -200,13 +200,13 @@ export const deleteAllSubtaskCtrl = async (req, res) => {
     if (deletedCount === 0) {
       logger.info(`No hay subtareas para la actividad con id: ${idActivity}`);
       return res.status(200).json({
-        message: 'No hay subtareas para eliminar',
+        message: "No hay subtareas para eliminar",
         actividad: isActivity.title,
       });
     }
-  
+
     res.status(200).json({
-      Message: 'Subtareas eliminadas",
+      Message: "Subtareas Eliminadas",
       Actividad: isActivity.titulo,
       Subtareas: deletedCount,
     });
@@ -222,4 +222,4 @@ export const deleteAllSubtaskCtrl = async (req, res) => {
           : "Error en el servidor. Por favor, intentalo de nuevo.",
     });
   }
-}
+};

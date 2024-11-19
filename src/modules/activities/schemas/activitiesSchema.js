@@ -55,5 +55,5 @@ export const activitiesSchema = z.object({
     .positive()
     .min(1, "Debe haber al menos una pregunta")
     .default(1),
-  option: z.enum(["Option 1", "Option 2"]).default("Option 1"),
+  option: z.enum(["Option-1", "Option-2"]).default("Option-1"),
 });
