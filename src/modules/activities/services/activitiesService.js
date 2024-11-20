@@ -198,3 +198,22 @@ export const deleteActivity = async (activityId) => {
     );
   }
 };
+
+export const getAllActivities = async (userId) => {
+  try {
+    const activities = await Activities.findAll({ where: { user_id: userId } });
+
+    if (!activities || activities.length === 0) {
+      logger.info(`No se encontraron actividades para el usuario: ${userId}`);
+
+      throw createError("No se encontraron actividades", 404);
+    }
+
+    return activities;
+  } catch (error) {
+    throw createError(
+      "Ocurrio un error al buscar las actividades",
+      error.statusCode || 500
+    );
+  }
+};
